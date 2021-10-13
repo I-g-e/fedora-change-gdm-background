@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Autor: Thiago Silva
-# Contact: thiagos.dasilva@gmail.com
-# URL: https://github.com/thiggy01/change-gdm-background
+# Original author: Thiago Silva
+# Original URL: https://github.com/thiggy01/change-gdm-background
+# Modified for Fedora by Ige
 # =================================================================== #
 
-# Check if script is run by root.
+# Check if the script is run as root.
 if [ "$(id -u)" -ne 0 ] ; then
     echo 'This script must be run as root or with the sudo command.'
     exit 1
@@ -17,14 +17,14 @@ fi
 #     exit 1
 # fi
 
-# Check if glib 2.0 development libraries are installed.
+# Check if Glib 2 development libraries are installed.
 if [ ! -x "$(command -v glib-compile-resources)" ]; then
-    echo 'Additional glib 2.0 libraries need to be installed.'
+    echo 'Glib 2 development libraries need to be installed.'
     read -p 'Type y or Y to proceed. Any other key to exit: ' -n 1
     if [[ "$REPLY" =~ ^[yY]$ ]]; then
-	apt install libglib2.0-dev-bin
+	dnf install glib2-devel
     else
-	echo "This tool can't run without required libraries"
+	echo "This tool can't run without the required libraries"
 	echo "Exiting."
 	echo
 	exit 1
@@ -47,26 +47,26 @@ restore () {
 mv "$gdm3Resource~" "$gdm3Resource"
 if [ "$?" -eq 0 ]; then
     chmod 644 "$gdm3Resource"
-    echo 'GDM background sucessfully restored.'
-    read -p 'Do you want to restart gdm to apply change? (y/n):' -n 1
+    echo 'GDM background successfully restored.'
+    read -p 'Do you want to restart GDM to apply the changes? (y/n):' -n 1
 	echo
 	if [[ "$REPLY" =~ ^[yY]$ ]]; then
 	    service gdm restart
 	else
-	    echo 'Restart GDM service to apply change.'
+	    echo 'Restart the GDM service to apply the changes.'
 	    exit 0
 	fi
 fi
 }
 
-# Restore the original gdm3 theme.
+# Restore the original GDM theme.
 [ "$1" == "--restore" ] && restore
 
-#Define main variables.
+# Define main variables.
 gdm3xml=$(basename "$gdm3Resource").xml
 workDir="/tmp/gdm3-theme"
 
-# Create directories from resource list.
+# Create directories from a resource list.
 CreateDirs() {
 for resource in `gresource list "$gdm3Resource~"`; do
     resource="${resource#\/org\/gnome\/shell\/}"
@@ -76,7 +76,7 @@ for resource in `gresource list "$gdm3Resource~"`; do
 done
 }
 
-# Extract resources from binary file.
+# Extract resources from a gresource binary file.
 ExtractRes() {
 for resource in `gresource list "$gdm3Resource~"`; do
     gresource extract "$gdm3Resource~" "$resource" > \
@@ -89,29 +89,29 @@ CompileRes() {
 glib-compile-resources --sourcedir=$workDir/theme/ $workDir/theme/"$gdm3xml"
 }
 
-# Moves the newly created resource to its default place.
+# Move the newly created resource into its default place.
 MoveRes() {
 mv $workDir/theme/gnome-shell-theme.gresource $gdm3Resource
 }
 
-# Check if gresource was sucessfuly moved to its default folder.
+# Check if gresource was successfully moved to its default folder.
 Check() {
 if [ "$?" -eq 0 ]; then
-# Solve a permission change issue (thanks to @huepf from github).
+    # Set permissions.
     chmod 644 "$gdm3Resource"
     echo 'GDM background sucessfully changed.'
-    read -p 'Do you want to restart gdm to apply change? (y/n):' -n 1
+    read -p 'Do you want to restart GDM to apply the changes? This will close your current login session along with applications. (y/n):' -n 1
     echo
     # If change was successful apply ask for gdm restart.
     if [[ "$REPLY" =~ ^[yY]$ ]]; then
 	service gdm restart
     else
-	echo "Change will be applied only after restarting gdm"
+	echo "Changes will be applied only after restarting GDM."
 	echo
     fi
 else
-    # If something went wrong, restore backup file.
-    echo 'something went wrong.'
+    # If something went wrong, restore the backup file.
+    echo 'Something went wrong.'
     restore
     echo 'No changes were applied.'
 fi
@@ -130,21 +130,21 @@ if [[ $(file --mime-type -b "$1") == image/*g ]]; then
     gdmBgImg=$(realpath "$1")
     imgFile=$(basename "$gdmBgImg")
 
-    # Call procedures to create directories and extract resources to them.
+    # Call procedures to create directories and extract resources into them.
     CreateDirs
     ExtractRes
 
-    # Copy selected image to the resources directory.
+    # Copy the selected image to the resources directory.
     cp "$gdmBgImg" "$workDir"/theme
 
-    # Change gdm background to the image you submited.
+    # Change the GDM background to the specified image.
     oldBg="#lockDialogGroup \{.*?\}"
     newBg="#lockDialogGroup {
 	background: url('resource:\/\/\/org\/gnome\/shell\/theme\/$imgFile');
 	background-size: cover; }"
     perl -i -0777 -pe "s/$oldBg/$newBg/s" "$workDir"/theme/gnome-shell.css
 
-    # Generate gresource xml file.
+    # Generate the gresource XML file.
     echo '<?xml version="1.0" encoding="UTF-8"?>
 <gresources>
     <gresource prefix="/org/gnome/shell/theme">' > "$workDir"/theme/"$gdm3xml"
@@ -171,20 +171,20 @@ if [[ $(file --mime-type -b "$1") == image/*g ]]; then
 # Change background colors.
 elif [[ "$1" =~ ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$ ]]; then
 
-    # Store selected background color.
+    # Store the selected background color.
     BgColor="$1"
 
     CreateDirs
     ExtractRes
 
-    # Change gdm background to the color you submited.
+    # Change the GDM background to the specified color.
     oldBg="#lockDialogGroup \{.*?\}"
     newBg="#lockDialogGroup {
 	background: $BgColor;
 	background-size: cover; }"
     perl -i -0777 -pe "s/$oldBg/$newBg/s" "$workDir"/theme/gnome-shell.css
 
-    # Generate the gresource xml file.
+    # Generate the gresource XML file.
     echo '<?xml version="1.0" encoding="UTF-8"?>
 <gresources>
     <gresource prefix="/org/gnome/shell/theme">' > "$workDir"/theme/"$gdm3xml"
@@ -206,11 +206,10 @@ elif [[ "$1" =~ ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$ ]]; then
 
 else
 
-    # If no file was submited or file submited isn't an image,
-    # show this message.
-    echo 'Image file not found or wrong color hex code.'
-    echo 'Please, submit a .jpg or .png image file or a valid hex code.'
-    echo 'Usage: sudo ./ubuntu-20.04-change-gdm-background /path/to/image.*g'
-    echo 'Usage: sudo ./ubuntu-20.04-change-gdm-background \#yourhexcode'
+    # If no valid image file or hex code was specified, show this message.
+    echo 'Image file not found or invalid color hex code.'
+    echo 'Please specify a .jpg or .png image file or a valid hex code.'
+    echo 'Usage: sudo ./change-gdm-background /path/to/image.*g'
+    echo "Usage: sudo ./change-gdm-background '#yourhexcode'"
 
 fi
