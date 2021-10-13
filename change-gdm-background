@@ -31,12 +31,13 @@ if [ ! -x "$(command -v glib-compile-resources)" ]; then
     fi
 fi
 
-# Assign the default gdm theme file path.
-if [ "$(lsb_release -i | awk '{print $3}')" == 'Ubuntu' ]; then
-    gdm3Resource=/usr/share/gnome-shell/theme/Yaru/gnome-shell-theme.gresource
-elif [ "$(lsb_release -i | awk '{print $3}')" == 'Pop' ]; then
-    gdm3Resource=/usr/share/gnome-shell/theme/Pop/gnome-shell-theme.gresource
-fi
+# Assign the default GDM theme file path.
+gdm3Resource=/usr/share/gnome-shell/gnome-shell-theme.gresource
+# if [ "$(lsb_release -i | awk '{print $3}')" == 'Ubuntu' ]; then
+#     gdm3Resource=/usr/share/gnome-shell/theme/Yaru/gnome-shell-theme.gresource
+# elif [ "$(lsb_release -i | awk '{print $3}')" == 'Pop' ]; then
+#     gdm3Resource=/usr/share/gnome-shell/theme/Pop/gnome-shell-theme.gresource
+# fi
 
 # Create a backup file of the original theme if there isn't one.
 [ ! -f "$gdm3Resource"~ ] && cp "$gdm3Resource" "$gdm3Resource~"
@@ -141,7 +142,7 @@ if [[ $(file --mime-type -b "$1") == image/*g ]]; then
     newBg="#lockDialogGroup {
 	background: url('resource:\/\/\/org\/gnome\/shell\/theme\/$imgFile');
 	background-size: cover; }"
-    perl -i -0777 -pe "s/$oldBg/$newBg/s" "$workDir"/theme/gdm3.css
+    perl -i -0777 -pe "s/$oldBg/$newBg/s" "$workDir"/theme/gnome-shell.css
 
     # Generate gresource xml file.
     echo '<?xml version="1.0" encoding="UTF-8"?>
@@ -181,7 +182,7 @@ elif [[ "$1" =~ ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$ ]]; then
     newBg="#lockDialogGroup {
 	background: $BgColor;
 	background-size: cover; }"
-    perl -i -0777 -pe "s/$oldBg/$newBg/s" "$workDir"/theme/gdm3.css
+    perl -i -0777 -pe "s/$oldBg/$newBg/s" "$workDir"/theme/gnome-shell.css
 
     # Generate the gresource xml file.
     echo '<?xml version="1.0" encoding="UTF-8"?>
