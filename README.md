@@ -13,7 +13,7 @@ If you are going to set an image file that has spaces in its file name or folder
 First, you will need to install Glib development files with `sudo dnf install glib2-devel`.  
 Then you can download the script with the following command:  
 ```
-wget github.com/thiggy01/change-gdm-background/raw/master/change-gdm-background
+wget github.com/I-g-e/fedora-change-gdm-background/raw/master/change-gdm-background
 ```  
 And set it as an executable with `chmod +x change-gdm-background`.
 
